@@ -349,7 +349,8 @@ attributeNames = ["firstName",
                   "idDocIssuedAt",
                   "idDocExpiresAt",
                   "nationalIdNo",
-                  "taxIdNo"
+                  "taxIdNo",
+                  "lei"
                  ]
 
 mapping :: Map.Map Text.Text AttributeTag
