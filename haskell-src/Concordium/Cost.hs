@@ -146,7 +146,7 @@ updateContractInstanceCost ::
   -> Maybe Wasm.ByteSize -- ^ Size of the new state, if update was successful.
   -> Energy
 updateContractInstanceCost ie ms se ss =
-  lookupModule ms + lookupContractState se + toEnergy ie + maybe 0 toEnergy ss + updateContractInstanceBaseCost
+  lookupModule ms + lookupContractStateV0 se + toEnergy ie + maybe 0 toEnergy ss + updateContractInstanceBaseCost
 
 -- |C_t for updating existing credential keys. Parametrised by amount of
 -- existing credentials and new keys. Due to the way the accounts are stored a
@@ -183,9 +183,13 @@ baseCost size numKeys = constA * fromIntegral numKeys + constB * fromIntegral si
 interContractMessage :: Energy
 interContractMessage = 10
 
--- |Cost of looking up a contract instance with a given state.
-lookupContractState :: Wasm.ByteSize -> Energy
-lookupContractState ss = fromIntegral ss `div` 50
+-- |Cost of looking up a contract instance V0 with a given state.
+lookupContractStateV0 :: Wasm.ByteSize -> Energy
+lookupContractStateV0 ss = fromIntegral ss `div` 50
+
+-- |Cost of looking up a contract instance V1.
+lookupContractStateV1 :: Energy
+lookupContractStateV1 = 1
 
 lookupModule :: Word64 -> Energy
 lookupModule ms = fromIntegral ms `div` 50

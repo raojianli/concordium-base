@@ -89,10 +89,8 @@ module Concordium.Wasm (
   ActionsTree(..),
   getActionsTree,
   ContractEvent(..),
-  SuccessfulResultData(..),
-  getSuccessfulResultData,
+  SuccessfulResultDataV0(..),
   getSuccessfulResultDataV0,
-  SuccessfulResultDataV0,
   -- *** Failed execution
   ContractExecutionFailure(..)
   ) where
@@ -504,27 +502,23 @@ instance Serialize ContractEvent where
   put (ContractEvent ev) = putShortByteStringWord32 ev
   get = ContractEvent <$> getShortByteStringWord32
 
-data SuccessfulResultData s a = SuccessfulResultData {
+data SuccessfulResultDataV0 a = SuccessfulResultDataV0 {
   messages :: !a,
-  newState :: !s,
+  newState :: !ContractState,
   logs :: ![ContractEvent]
   }
-
-type SuccessfulResultDataV0 a = SuccessfulResultData ContractState a
 
 -- |Specialized deserializer for processing FFI data.
 --
 -- If we update the integration, we should also update this deserializer.
-getSuccessfulResultData :: Get s -> Get a -> Get (SuccessfulResultData s a)
-getSuccessfulResultData stateDecoder messagesDecoder = do
-  newState <- stateDecoder
+getSuccessfulResultDataV0 :: Get a -> Get (SuccessfulResultDataV0 a)
+getSuccessfulResultDataV0 messagesDecoder = do
+  newState <- get
   len <- fromIntegral <$> getWord32be
   logs <- replicateM len get
   messages <- messagesDecoder
-  return SuccessfulResultData{..}
+  return SuccessfulResultDataV0{..}
 
-getSuccessfulResultDataV0 :: Get a -> Get (SuccessfulResultDataV0 a)
-getSuccessfulResultDataV0 = getSuccessfulResultData get
 
 -- |Reason for failure of contract execution.
 data ContractExecutionFailure =
