@@ -33,14 +33,12 @@ newtype instance GenesisData 'P2 = GDP2 {unGDP2 :: P2.GenesisDataP2}
 newtype instance GenesisData 'P3 = GDP3 {unGDP3 :: P3.GenesisDataP3}
 newtype instance GenesisData 'P4 = GDP4 {unGDP4 :: P4.GenesisDataP4}
 
-
 instance (IsProtocolVersion pv) => BasicGenesisData (GenesisData pv) where
     gdGenesisTime = case protocolVersion @pv of
         SP1 -> gdGenesisTime . unGDP1
         SP2 -> gdGenesisTime . unGDP2
         SP3 -> gdGenesisTime . unGDP3
         SP4 -> gdGenesisTime . unGDP4
-
     {-# INLINE gdGenesisTime #-}
     gdSlotDuration = case protocolVersion @pv of
         SP1 -> gdSlotDuration . unGDP1
@@ -53,7 +51,6 @@ instance (IsProtocolVersion pv) => BasicGenesisData (GenesisData pv) where
         SP2 -> gdMaxBlockEnergy . unGDP2
         SP3 -> gdMaxBlockEnergy . unGDP3
         SP4 -> gdMaxBlockEnergy . unGDP4
-
     {-# INLINE gdMaxBlockEnergy #-}
     gdFinalizationParameters = case protocolVersion @pv of
         SP1 -> gdFinalizationParameters . unGDP1
@@ -74,7 +71,6 @@ instance (IsProtocolVersion pv) => Eq (GenesisData pv) where
         SP2 -> (==) `on` unGDP2
         SP3 -> (==) `on` unGDP3
         SP4 -> (==) `on` unGDP4
-
 
 instance (IsProtocolVersion pv) => Serialize (GenesisData pv) where
     get = case protocolVersion @pv of

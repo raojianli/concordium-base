@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE KindSignatures #-}
 
 -- |This module contains the 'ProtocolVersion' datatype, which enumerates the
@@ -45,7 +46,6 @@ protocolVersionToWord64 P1 = 1
 protocolVersionToWord64 P2 = 2
 protocolVersionToWord64 P3 = 3
 protocolVersionToWord64 P4 = 4
-
 
 protocolVersionFromWord64 :: MonadFail m => Word64 -> m ProtocolVersion
 protocolVersionFromWord64 1 = return P1

@@ -60,7 +60,11 @@ module Concordium.Wasm (
   ReceiveName(..),
   isValidReceiveName,
   contractAndFunctionName,
+  EntrypointName(..),
+  isValidEntrypointName,
+  makeReceiveName,
   Parameter(..),
+  emptyParameter,
 
   -- *** Contract state
   ContractState(..),
@@ -109,7 +113,6 @@ import Data.Hashable
 import Data.Int (Int32)
 import qualified Data.Map.Strict as Map
 import Data.Serialize
-import qualified Data.Set as Set
 import qualified Data.Text as Text
 import Data.Text(Text)
 import qualified Data.Text.Encoding as Text
@@ -163,7 +166,7 @@ instance Serialize WasmModule where
 
   get = do
     wasmVersion <- getWord32be
-    unless (wasmVersion == 0) $ fail "Unsupported Wasm module version."
+    unless (wasmVersion <= 1) $ fail $ "Unsupported Wasm module version: " ++ show wasmVersion
     wasmSource <- get
     return WasmModule{..}
 
@@ -229,6 +232,38 @@ isValidReceiveName proposal =
       hasDot = Text.any (== '.') proposal
   in hasValidLength && hasValidCharacters && hasDot
 
+-- |Name of the entrypoint, i.e., the part of the receive name after the dot.
+newtype EntrypointName = EntrypointName { entrypointName :: Text }
+    deriving (Eq, Show, Ord)
+    deriving(AE.ToJSON) via Text
+
+-- |Check whether the given text is a valid entrypoint name.
+-- This is the case if
+--
+-- * length is <= maxFuncNameSize
+-- * all characters are valid ascii characters in alphanumeric or punctuation classes
+isValidEntrypointName :: Text -> Bool
+isValidEntrypointName proposal =
+  -- The limit is specified in bytes, but Text.length returns the number of chars.
+  -- This is not a problem, as we only allow ASCII.
+  let hasValidLength = Text.length proposal <= maxFuncNameSize
+      hasValidCharacters = Text.all (\c -> isAscii c && (isAlphaNum c || isPunctuation c)) proposal
+  in hasValidLength && hasValidCharacters
+
+instance Serialize EntrypointName where
+  put = putByteStringWord16 . Text.encodeUtf8 . entrypointName
+  get = do
+    bs <- getByteStringWord16
+    case Text.decodeUtf8' bs of
+      Left _ -> fail "Not a valid utf-8 encoding."
+      Right t | isValidEntrypointName t -> return (EntrypointName t)
+              | otherwise -> fail $ "Not a valid entrypoint name: " ++ Text.unpack t
+
+
+-- |Make a receive name from an init name and an entrypoint name.
+makeReceiveName :: InitName -> EntrypointName -> ReceiveName
+makeReceiveName iName EntrypointName{..} = ReceiveName (initContractName iName <> "." <> entrypointName)
+
 -- |Extract the contract name from the init function name.
 initContractName :: InitName -> Text
 initContractName = Text.drop (Text.length "init_") . initName
@@ -258,6 +293,10 @@ instance Serialize ReceiveName where
 newtype Parameter = Parameter { parameter :: ShortByteString }
     deriving(Eq, Show)
     deriving(AE.ToJSON, AE.FromJSON) via ByteStringHex
+
+-- |Parameter of size 0.
+emptyParameter :: Parameter
+emptyParameter = Parameter BSS.empty
 
 instance Serialize Parameter where
   put = putShortByteStringWord16 . parameter

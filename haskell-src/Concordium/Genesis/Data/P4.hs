@@ -49,9 +49,9 @@ getGenesisDataV6 =
         1 -> do
             genesisRegenesis <- getRegenesisData
             return GDP4Regenesis{..}
-        _ -> fail "Unrecognized P3 genesis data type."
+        _ -> fail "Unrecognized P4 genesis data type."
 
--- |Serialize genesis data in the V5 format.
+-- |Serialize genesis data in the V6 format.
 putGenesisDataV6 :: Putter GenesisDataP4
 putGenesisDataV6 GDP4Initial{..} = do
   putWord8 0
@@ -67,7 +67,7 @@ getVersionedGenesisData :: Get GenesisDataP4
 getVersionedGenesisData =
     getVersion >>= \case
         6 -> getGenesisDataV6
-        n -> fail $ "Unsupported genesis data version for P3 genesis: " ++ show n
+        n -> fail $ "Unsupported genesis data version for P4 genesis: " ++ show n
 
 -- |Serialize genesis data with a version tag.
 -- This will use the V6 format.
