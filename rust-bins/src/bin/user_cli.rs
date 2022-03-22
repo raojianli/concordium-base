@@ -61,7 +61,7 @@ struct StartIp {
 }
 
 #[derive(StructOpt)]
-struct CreateCredential {
+pub struct CreateCredential {
     #[structopt(
         long = "id-object",
         help = "File with the JSON encoded identity object."
@@ -328,7 +328,7 @@ struct StoredData {
     id_use_data: IdObjectUseData<id::constants::IpPairing, id::constants::ArCurve>,
 }
 
-fn handle_create_credential(cc: CreateCredential) -> anyhow::Result<()> {
+pub fn handle_create_credential(cc: CreateCredential) -> anyhow::Result<()> {
     let id_object = read_id_object(&cc.id_object).context(format!(
         "Could not read the identity object from {}.",
         &cc.id_object.display()
