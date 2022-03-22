@@ -66,7 +66,7 @@ version = "0"
 
 [dependencies.id]
 path = "../rust-src/id"
-version = "0"
+version = "0.1.0"
 
 [dependencies.pedersen_scheme]
 path = "../rust-src/pedersen_scheme"
